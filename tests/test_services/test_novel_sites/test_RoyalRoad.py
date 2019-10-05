@@ -1,14 +1,28 @@
-import mock
+import pprint
+from unittest.mock import patch
+from tests.mock_web_responses import GetMockResponse
+from services.novel_sites import royal_road
 
 
-def test_SearchByName(name):
+def test_SearchByName():
+    
+    # Mock response so we always get a sample test html instead of really hitting RRD
+    with patch('services.novel_sites.royal_road.requests.get') as mock_get:
+        mock_get.return_value.ok = True
+        mock_get.return_value.text = GetMockResponse('search_response.html')
+
+        search_result = royal_road.SearchByName('my title search')
+
+        # Ensure one of the results in the returned dictionary
+        # has an ID which we know is in the sample test html
+        assert filter(lambda story: story['id'] == '17690', search_result)
+
+
+def test_GetTableOfContentsByID():
     assert False
 
-def test_GetTableOfContentsByID(rrd_story_id):
+def test_GetChapterTextByURL():
     assert False
 
-def test_GetChapterTextByURL(chapter_url):
-    assert False
-
-def test_GetStoryByID(rrd_story_id):
+def test_GetStoryByID():
     assert False
