@@ -7,6 +7,8 @@ RRD_BASE_URL = "https://www.royalroad.com/"
 
 RRD_SEARCH_URL = "fictions/search?title={}"
 
+RRD_TOC_URL = "fiction/{}"
+
 def SearchByName(name_to_search):
     "Search Royal Road for fiction with title containing name_to_search"
     
@@ -37,7 +39,6 @@ def SearchByName(name_to_search):
         extracted_search_result['description'] = html_search_result.find(class_='fiction-description').text
         extracted_search_result['id'] = str(html_search_result.find(class_='fiction-detail')['data-fid'])
 
-        # Add the resulting dict of data to the final listing
         extracted_search_results.append(extracted_search_result)
 
     # Return the search result as a list of dicts containing title, description, and id
@@ -45,7 +46,40 @@ def SearchByName(name_to_search):
     
 
 def GetTableOfContentsByID(rrd_story_id):
-    pass
+    "Fetch the table of contents for the story with RRD ID rrd_story_id"
+    
+    # Fetch contents page for the story with the given ID
+    toc_url = urljoin(RRD_BASE_URL, RRD_TOC_URL.format(rrd_story_id))
+    toc_response = requests.get(toc_url) #expect http 301 and automatic redirection
+
+    # Throw if unsuccesssful
+    toc_response.raise_for_status()
+
+    # Parse the page into a soup DOM
+    toc_soup = BeautifulSoup(toc_response.text, 'html.parser')
+
+    # Isolate the tablebody in the chapters table div
+    toc_tbody = toc_soup.find(id='chapters').find('tbody')
+
+    # Pick out the individual chapters in a list
+    html_chapters_list = toc_tbody.find_all('tr', recursive=False)
+
+    # Extract as a list of dicts, the data for each chapter
+    extracted_toc = []
+    for chapter_number, html_chapter in enumerate(html_chapters_list):
+        
+        extracted_chapter = {}
+
+        # Within the chapter html, extract the title and url. Add a synthetic chapter number
+        extracted_chapter['chapter_number'] = chapter_number
+        extracted_chapter['title'] = html_chapter.find('td', class_=None).find('a').text
+        extracted_chapter['url'] = html_chapter['data-url']
+
+        extracted_toc.append(extracted_chapter)
+
+    # Return a list of chapters, with title, url, and a synthetic chapter number
+    return extracted_toc
+
 
 def GetChapterTextByURL(chapter_url):
     pass
