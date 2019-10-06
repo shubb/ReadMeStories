@@ -45,7 +45,15 @@ def test_GetChapterTextByURL():
 def test_GetStoryByID():
     # This one we will do live on RRD instead of sample htmls
 
+    # Rip story 17690
     story_rip = royal_road.GetStoryByID('17690')
 
-    chapter_one = filter(lambda chapter: 'Chapter 1 Coming of Age Ceremony' in chapter['title'])
+    # Grab the first chapter which should be called 'A Meaningless Box'
+    chapter_one = next(filter(lambda chapter: 'Meaningless Box' in chapter['title'], story_rip))
+    
+    # First chapter should contain this text
+    assert 'oversized black cloak' in chapter_one['text']
+    
+    # there should be at least 2 chapters in this story
+    assert len(story_rip) > 2
 

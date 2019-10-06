@@ -2,6 +2,7 @@ import urllib
 import requests
 from bs4 import BeautifulSoup
 from requests.compat import urljoin
+import copy
 
 RRD_BASE_URL = "https://www.royalroad.com/"
 
@@ -82,11 +83,6 @@ def GetTableOfContentsByID(rrd_story_id):
     return extracted_toc
 
 
-def _remove_attrs(soup):
-    for tag in soup.findAll(True): 
-        tag.attrs = None
-    return soup
-
 def GetChapterTextByURL(chapter_url):
     "Fetch chapter text for the chapter at url chapter_url"
     
@@ -112,6 +108,18 @@ def GetChapterTextByURL(chapter_url):
     return simplified_chapter_text
 
 
-
 def GetStoryByID(rrd_story_id):
-    pass
+    
+    # Get the TOC for this story
+    table_of_content = GetTableOfContentsByID(rrd_story_id)
+
+    # For each chapter in the TOC, fetch the text and return
+    # a list containing the TOC data for the chapter plus the text
+    chapters_with_content = []
+    for chapter in table_of_content:
+        chapter_with_content = copy.deepcopy(chapter)
+        chapter_with_content['text'] = GetChapterTextByURL(chapter['url'])
+        chapters_with_content.append(chapter_with_content)
+
+    return chapters_with_content
+
