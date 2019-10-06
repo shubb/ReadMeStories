@@ -30,3 +30,39 @@ def SpeakSection(section_text):
     response = client.synthesize_speech(synthesis_input, voice, audio_config)
 
     return response.audio_content
+
+def _is_blank(text):
+    return text is None or text.strip() == ''
+
+def SplitTextToSections(full_text, max_section_length):
+
+    # Split the text into paragraphs
+    text_as_paragraphs = full_text.splitlines()
+
+    # Post proccess paragraphs
+    final_list = []
+    for paragraph in text_as_paragraphs:
+        
+        # If the 'paragraph' is blank
+        if _is_blank(paragraph):
+            continue # Blank, leave out
+
+        #If the paragraph is too big, split it into sentences
+        if len(paragraph) > max_section_length:
+            sentences = paragraph.split('.')
+            for sentence in sentences:
+                if _is_blank(sentence):
+                    continue # Blank, leave out
+                # If the sentence is too big, just truncate it. 
+                if len(sentence) > max_section_length:
+                    final_list.append(sentence[0:max_section_length - 10])
+                else:
+                    final_list.append(sentence)
+        else:
+            # Paragraph is small enough to append as a section
+            final_list.append(paragraph)  
+
+    return final_list
+
+def CleanUpTextForTTS(full_text):
+    pass
