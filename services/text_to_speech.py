@@ -10,21 +10,21 @@ GOOGLE_MAX_SECTION_LENGTH=5000
 GOOGLE_CREDENTIALS_PATH=os.path.join(ROOT_DIR, 'secrets/readnovel-a7ed7aaa0145.json')
 # TODO: Should this path be in config file?
 
-def SpeakChapter(chapter_text, max_section_length=GOOGLE_MAX_SECTION_LENGTH):
-    "Converts a full length chapter text into an mp3"
+def SpeakLongText(long_text, max_section_length=GOOGLE_MAX_SECTION_LENGTH):
+    "Converts a full length long_text text into an mp3"
 
-    # Split the chapter into sections small enough to TTS
-    chapter_sections = SplitTextToSections(chapter_text, max_section_length)
+    # Split the long_text into sections small enough to TTS
+    long_text_sections = SplitTextToSections(long_text, max_section_length)
 
     # Generate an MP3 for each section
     mp3_sections = []
-    for section in chapter_sections:
+    for section in long_text_sections:
         mp3_sections.append(SpeakSection(section))
 
     # Combine the sections into a single mp3
-    mp3_chapter = Sine(300).to_audio_segment(duration=500)
+    mp3_long_text = Sine(300).to_audio_segment(duration=500)
     for mp3_section in mp3_sections:
-        mp3_chapter = mp3_chapter.append(AudioSegment.from_mp3(mp3_section.name))
+        mp3_long_text = mp3_long_text.append(AudioSegment.from_mp3(mp3_section.name))
 
     # Clean up the section temp files
     for mp3_section in mp3_sections:
@@ -32,7 +32,7 @@ def SpeakChapter(chapter_text, max_section_length=GOOGLE_MAX_SECTION_LENGTH):
 
     # Return the full Mp3 (as a temporary file)
     temporary_mp3 = tempfile.NamedTemporaryFile(suffix='.mp3', delete=False)
-    mp3_chapter.export(temporary_mp3.name, format="mp3")
+    mp3_long_text.export(temporary_mp3.name, format="mp3")
 
     return temporary_mp3
 
