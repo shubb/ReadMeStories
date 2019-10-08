@@ -10,6 +10,31 @@ GOOGLE_MAX_SECTION_LENGTH=5000
 GOOGLE_CREDENTIALS_PATH=os.path.join(ROOT_DIR, 'secrets/readnovel-a7ed7aaa0145.json')
 # TODO: Should this path be in config file?
 
+def SpeakChapter(chapter_dict):
+
+    # We will return the resulting mp3 in this temporary file
+    mp3_tempfile_to_return = tempfile.NamedTemporaryFile(suffix='.mp3', delete=False)
+
+    # Generate the chapter name
+    mp3_tempfile_chapter_title = SpeakSection("Chapter titled: {}".format(chapter_dict['title']))    
+    
+    # Produce a chapter:
+    (
+        # Start with the Chapter Title
+        AudioSegment.from_mp3(mp3_tempfile_chapter_title.name)
+        # Append a moments silence
+        .append(AudioSegment.silent(duration=500))
+        # Append the actual chapter text
+        .append(AudioSegment.from_mp3(SpeakLongText(chapter_dict['text']).name))
+        # Append another moments silence
+        .append(AudioSegment.silent(duration=500))     
+        # Export the result into the tempfile as an mp3
+        .export(mp3_tempfile_to_return.name, format="mp3")
+    )
+
+    # Return the tempfile which is now an MP3 of our chapter
+    return mp3_tempfile_to_return
+
 def SpeakLongText(long_text, max_section_length=GOOGLE_MAX_SECTION_LENGTH):
     "Converts a full length long_text text into an mp3"
 

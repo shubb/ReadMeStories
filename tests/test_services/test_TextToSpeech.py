@@ -14,6 +14,21 @@ def test_SpeakSelection():
     assert os.stat(tempfile_mp3_output.name).st_size < 10000
     os.unlink(tempfile_mp3_output.name)
 
+
+def test_SpeakChapter():
+
+    sample_chapter_dict = {
+        "title": "My Title",
+        "text": ''.join([ 'cats and dogs.' * 10 + os.linesep * 2 for i in range(5) ])
+    }
+
+    tempfile_mp3_output = TextToSpeech.SpeakChapter(sample_chapter_dict)
+
+    # Sniff test the MP3 by checking it is about the right size
+    assert os.stat(tempfile_mp3_output.name).st_size > 204919
+    assert os.stat(tempfile_mp3_output.name).st_size < 404919    
+    os.unlink(tempfile_mp3_output.name)
+
 def test_SpeakLongText():
     
     # Should be split into 5 paragraphs before synthesis
