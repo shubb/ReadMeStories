@@ -17,7 +17,7 @@ def SearchByName(name_to_search):
     search_url = urljoin(RRD_BASE_URL, RRD_SEARCH_URL.format(name_to_search))
     search_response = requests.get(search_url)
     
-    # Throw if unsuccesssful
+    # Throw if unsuccessful
     search_response.raise_for_status()
 
     # Parse the page into a soup DOM
@@ -53,7 +53,7 @@ def GetTableOfContentsByID(rrd_story_id):
     toc_url = urljoin(RRD_BASE_URL, RRD_TOC_URL.format(rrd_story_id))
     toc_response = requests.get(toc_url) #expect http 301 and automatic redirection
 
-    # Throw if unsuccesssful
+    # Throw if unsuccessful
     toc_response.raise_for_status()
 
     # Parse the page into a soup DOM
@@ -90,7 +90,7 @@ def GetChapterTextByURL(chapter_url):
     chapter_url = urljoin(RRD_BASE_URL, chapter_url)
     chapter_response = requests.get(chapter_url)
 
-    # Throw if unsuccesssful
+    # Throw if unsuccessful
     chapter_response.raise_for_status()
 
     # Parse the page into a soup DOM
