@@ -79,13 +79,13 @@ def SpeakSection(section_text):
     # voice gender ("neutral")
     voice = texttospeech.types.VoiceSelectionParams(
         language_code='en-GB',
-        name='en-GB-Wavenet-A')
+        name='en-IN-Wavenet-A') #Use indian english wavenet voice for a unique sound
 
     # Select the type of audio file you want returned
     audio_config = texttospeech.types.AudioConfig(
         audio_encoding=texttospeech.enums.AudioEncoding.MP3,
-        pitch=-2,
-        speaking_rate=1.3,
+        pitch=0,
+        speaking_rate=1.0,
         effects_profile_id=['headphone-class-device'])
 
     # Perform the text-to-speech request on the text input with the selected
