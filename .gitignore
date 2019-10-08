@@ -105,3 +105,4 @@ venv.bak/
 
 # key files and other secrets
 secrets/
+.noseids
