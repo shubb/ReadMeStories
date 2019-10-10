@@ -106,3 +106,10 @@ venv.bak/
 # key files and other secrets
 secrets/
 .noseids
+.noseids
+ReadMeStories.code-workspace
+runner.py
+.vscode/launch.json
+.vscode/settings.json
+services/text_to_speech.py
+tests/test_services/test_TextToSpeech.py

@@ -1,18 +1,20 @@
 import os
+import tempfile
 
 import services.text_to_speech as TextToSpeech
 
 def test_SpeakSelection():
 
     # Create an MP3 speech saying section_text
-    section_text = "Some text to say"
+    section_text = "Some text to say"  
 
-    tempfile_mp3_output = TextToSpeech.SpeakSection(section_text)
+    with tempfile.TemporaryDirectory() as segment_temp_dir:
 
-    # Sniff test the MP3 by checking it is about the right size
-    assert os.stat(tempfile_mp3_output.name).st_size > 3000
-    assert os.stat(tempfile_mp3_output.name).st_size < 10000
-    os.unlink(tempfile_mp3_output.name)
+        tempfile_mp3_output = TextToSpeech.SpeakSection(section_text, segment_temp_dir)
+
+        # Sniff test the MP3 by checking it is about the right size
+        assert os.stat(tempfile_mp3_output).st_size > 3000
+        assert os.stat(tempfile_mp3_output).st_size < 10000
 
 
 def test_SpeakChapter():
@@ -26,7 +28,7 @@ def test_SpeakChapter():
 
     # Sniff test the MP3 by checking it is about the right size
     assert os.stat(tempfile_mp3_output.name).st_size > 204919
-    assert os.stat(tempfile_mp3_output.name).st_size < 404919    
+    assert os.stat(tempfile_mp3_output.name).st_size < 504919    
     os.unlink(tempfile_mp3_output.name)
 
 def test_SpeakLongText():
@@ -38,7 +40,7 @@ def test_SpeakLongText():
 
     # Sniff test the MP3 by checking it is about the right size
     assert os.stat(tempfile_mp3_output.name).st_size > 204919
-    assert os.stat(tempfile_mp3_output.name).st_size < 404919    
+    assert os.stat(tempfile_mp3_output.name).st_size < 504919    
     os.unlink(tempfile_mp3_output.name)
 
 def test_SplitTextToSections():

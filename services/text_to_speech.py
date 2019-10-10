@@ -1,4 +1,5 @@
 import os
+import uuid
 import tempfile
 from google.cloud import texttospeech
 from pydub.generators import Sine
@@ -16,7 +17,7 @@ def SpeakChapter(chapter_dict):
     mp3_tempfile_to_return = tempfile.NamedTemporaryFile(suffix='.mp3', delete=False)
 
     # Generate the chapter name
-    mp3_tempfile_chapter_title = SpeakSection("Chapter titled: {}".format(chapter_dict['title']))    
+    mp3_tempfile_chapter_title = SpeakLongText("Chapter titled: {}".format(chapter_dict['title']))    
     
     # Produce a chapter:
     (
@@ -41,27 +42,28 @@ def SpeakLongText(long_text, max_section_length=GOOGLE_MAX_SECTION_LENGTH):
     # Split the long_text into sections small enough to TTS
     long_text_sections = SplitTextToSections(long_text, max_section_length)
 
-    # Generate an MP3 for each section
-    mp3_sections = []
-    for section in long_text_sections:
-        mp3_sections.append(SpeakSection(section))
+    # Allocate a temporary directory
+    with tempfile.TemporaryDirectory() as segment_temp_dir:
 
-    # Combine the sections into a single mp3
-    mp3_long_text = Sine(300).to_audio_segment(duration=500)
-    for mp3_section in mp3_sections:
-        mp3_long_text = mp3_long_text.append(AudioSegment.from_mp3(mp3_section.name))
+        # Generate an MP3 for each section
+        mp3_sections = []
+        for section in long_text_sections:
+            mp3_sections.append(SpeakSection(section, segment_temp_dir))
 
-    # Clean up the section temp files
-    for mp3_section in mp3_sections:
-        os.unlink(mp3_section.name)
+        # Combine the sections into a single mp3
+        mp3_long_text = Sine(300).to_audio_segment(duration=500)
+        for mp3_section in mp3_sections:
+            mp3_long_text = mp3_long_text.append(AudioSegment.from_mp3(mp3_section))
 
-    # Return the full Mp3 (as a temporary file)
-    temporary_mp3 = tempfile.NamedTemporaryFile(suffix='.mp3', delete=False)
-    mp3_long_text.export(temporary_mp3.name, format="mp3")
+        # Return the full Mp3 (as a temporary file)
+        temporary_mp3 = tempfile.NamedTemporaryFile(suffix='.mp3', delete=False)
+        mp3_long_text.export(temporary_mp3.name, format="mp3")
+        
+        return temporary_mp3
 
-    return temporary_mp3
+    
 
-def SpeakSection(section_text):
+def SpeakSection(section_text, segment_dir):
     "Converts a short section text into an mp3"
     if len(section_text) > GOOGLE_MAX_SECTION_LENGTH:
         raise Exception("Section too big, text must be broken into units of ${GOOGLE_MAX_SECTION_LENGTH}")
@@ -92,14 +94,15 @@ def SpeakSection(section_text):
     # voice parameters and audio file type
     response = client.synthesize_speech(synthesis_input, voice, audio_config)
 
-    temporary_mp3 = tempfile.NamedTemporaryFile(suffix='.mp3', delete=False)
+    destination_filename = os.path.join(segment_dir, uuid.uuid4().hex + '.mp3')
+    temporary_mp3 = open(destination_filename, 'wb+')
     temporary_mp3.write(response.audio_content)
     temporary_mp3.close()
 
     # Needs to be deleted later
     # TODO: What is better way to do this? Does it work without delete=False
     # Return the section mp3 (as a temporary file)
-    return temporary_mp3
+    return destination_filename
 
 def _is_blank(text):
     return text is None or text.strip() == ''

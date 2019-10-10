@@ -7,7 +7,7 @@ import services.novel_sites.royal_road as RoyalRoad
 def NovelToAudiobook():
     
     #Fetch an actual story
-    story_rip = RoyalRoad.GetStoryByID('17690')
+    story_rip = RoyalRoad.GetStoryByID('26675')
 
     for chapter in story_rip:
         temp_mp3 = TextToSpeech.SpeakChapter(chapter)
