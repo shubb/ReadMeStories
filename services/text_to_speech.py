@@ -11,6 +11,9 @@ GOOGLE_MAX_TEXT_LENGTH=5000
 GOOGLE_CREDENTIALS_PATH=os.path.join(ROOT_DIR, 'secrets/readnovel-a7ed7aaa0145.json')
 # TODO: Should this path be in config file?
 
+# Load google credentials
+credentials = service_account.Credentials.from_service_account_file(GOOGLE_CREDENTIALS_PATH)
+
 def SpeakChapter(chapter_dict):
 
     # We will return the resulting mp3 in this temporary file
@@ -67,9 +70,6 @@ def SpeakShortText(short_text, segment_dir):
     "Converts a short short_text text into an mp3"
     if len(short_text) > GOOGLE_MAX_TEXT_LENGTH:
         raise Exception("Text too big, text must be broken into units of ${GOOGLE_MAX_TEXT_LENGTH}")
-
-    # Load google credentials
-    credentials = service_account.Credentials.from_service_account_file(GOOGLE_CREDENTIALS_PATH)
 
     # Instantiates a client
     client = texttospeech.TextToSpeechClient(credentials=credentials)
