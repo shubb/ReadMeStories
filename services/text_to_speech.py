@@ -7,7 +7,7 @@ from pydub import AudioSegment
 from project_root import ROOT_DIR
 from google.oauth2 import service_account
 
-GOOGLE_MAX_SECTION_LENGTH=5000
+GOOGLE_MAX_TEXT_LENGTH=5000
 GOOGLE_CREDENTIALS_PATH=os.path.join(ROOT_DIR, 'secrets/readnovel-a7ed7aaa0145.json')
 # TODO: Should this path be in config file?
 
@@ -36,24 +36,24 @@ def SpeakChapter(chapter_dict):
     # Return the tempfile which is now an MP3 of our chapter
     return mp3_tempfile_to_return
 
-def SpeakLongText(long_text, max_section_length=GOOGLE_MAX_SECTION_LENGTH):
+def SpeakLongText(long_text, max_text_length=GOOGLE_MAX_TEXT_LENGTH):
     "Converts a full length long_text text into an mp3"
 
-    # Split the long_text into sections small enough to TTS
-    long_text_sections = SplitTextToSections(long_text, max_section_length)
+    # Split the long_text into short_texts small enough to TTS
+    long_text_short_texts = SplitTextToShortTexts(long_text, max_text_length)
 
     # Allocate a temporary directory
     with tempfile.TemporaryDirectory() as segment_temp_dir:
 
-        # Generate an MP3 for each section
-        mp3_sections = []
-        for section in long_text_sections:
-            mp3_sections.append(SpeakSection(section, segment_temp_dir))
+        # Generate an MP3 for each short_text
+        mp3_short_texts = []
+        for short_text in long_text_short_texts:
+            mp3_short_texts.append(SpeakShortText(short_text, segment_temp_dir))
 
-        # Combine the sections into a single mp3
+        # Combine the short_texts into a single mp3
         mp3_long_text = Sine(300).to_audio_segment(duration=500)
-        for mp3_section in mp3_sections:
-            mp3_long_text = mp3_long_text.append(AudioSegment.from_mp3(mp3_section))
+        for mp3_short_text in mp3_short_texts:
+            mp3_long_text = mp3_long_text.append(AudioSegment.from_mp3(mp3_short_text))
 
         # Return the full Mp3 (as a temporary file)
         temporary_mp3 = tempfile.NamedTemporaryFile(suffix='.mp3', delete=False)
@@ -63,10 +63,10 @@ def SpeakLongText(long_text, max_section_length=GOOGLE_MAX_SECTION_LENGTH):
 
     
 
-def SpeakSection(section_text, segment_dir):
-    "Converts a short section text into an mp3"
-    if len(section_text) > GOOGLE_MAX_SECTION_LENGTH:
-        raise Exception("Section too big, text must be broken into units of ${GOOGLE_MAX_SECTION_LENGTH}")
+def SpeakShortText(short_text, segment_dir):
+    "Converts a short short_text text into an mp3"
+    if len(short_text) > GOOGLE_MAX_TEXT_LENGTH:
+        raise Exception("Text too big, text must be broken into units of ${GOOGLE_MAX_TEXT_LENGTH}")
 
     # Load google credentials
     credentials = service_account.Credentials.from_service_account_file(GOOGLE_CREDENTIALS_PATH)
@@ -75,7 +75,7 @@ def SpeakSection(section_text, segment_dir):
     client = texttospeech.TextToSpeechClient(credentials=credentials)
 
     # Set the text input to be synthesized
-    synthesis_input = texttospeech.types.SynthesisInput(text=section_text)
+    synthesis_input = texttospeech.types.SynthesisInput(text=short_text)
 
     # Build the voice request, select the language code ("en-US") and the ssml
     # voice gender ("neutral")
@@ -101,13 +101,13 @@ def SpeakSection(section_text, segment_dir):
 
     # Needs to be deleted later
     # TODO: What is better way to do this? Does it work without delete=False
-    # Return the section mp3 (as a temporary file)
+    # Return the short_text mp3 (as a temporary file)
     return destination_filename
 
 def _is_blank(text):
     return text is None or text.strip() == ''
 
-def SplitTextToSections(full_text, max_section_length):
+def SplitTextToShortTexts(full_text, max_text_length):
 
     # Split the text into paragraphs
     text_as_paragraphs = full_text.splitlines()
@@ -121,25 +121,25 @@ def SplitTextToSections(full_text, max_section_length):
             continue # Blank, leave out
 
         #If the paragraph is too big, split it into sentences
-        if len(paragraph) > max_section_length:
+        if len(paragraph) > max_text_length:
             sentences = paragraph.split('.')
             for sentence in sentences:
                 if _is_blank(sentence):
                     continue # Blank, leave out
                 # If the sentence is too big, just truncate it. 
-                if len(sentence) > max_section_length:
-                    final_list.append(sentence[0:max_section_length - 10])
+                if len(sentence) > max_text_length:
+                    final_list.append(sentence[0:max_text_length - 10])
                 else:
                     final_list.append(sentence)
         else:
-            # Paragraph is small enough to append as a section
+            # Paragraph is small enough to append as a short_text
             final_list.append(paragraph)  
 
     return final_list
 
 def CleanUpTextForTTS(full_text):
     # TODO: remove things that typically cause bad tts
-    # section breaks
+    # short_text breaks
     # URLs
     # Long non-words
     # detect and handle acronyms nicely?

@@ -3,14 +3,14 @@ import tempfile
 
 import services.text_to_speech as TextToSpeech
 
-def test_SpeakSelection():
+def test_SpeakShortText():
 
     # Create an MP3 speech saying section_text
     section_text = "Some text to say"  
 
     with tempfile.TemporaryDirectory() as segment_temp_dir:
 
-        tempfile_mp3_output = TextToSpeech.SpeakSection(section_text, segment_temp_dir)
+        tempfile_mp3_output = TextToSpeech.SpeakShortText(section_text, segment_temp_dir)
 
         # Sniff test the MP3 by checking it is about the right size
         assert os.stat(tempfile_mp3_output).st_size > 3000
@@ -43,14 +43,14 @@ def test_SpeakLongText():
     assert os.stat(tempfile_mp3_output.name).st_size < 504919    
     os.unlink(tempfile_mp3_output.name)
 
-def test_SplitTextToSections():
+def test_SplitTextToShortTexts():
 
     # Test: Split by paragraph
     # Test input: 1000 paragraphs each containing the word cats 50 times
     num_paragraphs = 1000
     max_section_size = 500
     text_with_paragraphs = ''.join([ 'cats ' * 50 + os.linesep * 2 for i in range(num_paragraphs) ])
-    text_seperated_into_sections = TextToSpeech.SplitTextToSections(text_with_paragraphs, max_section_size)
+    text_seperated_into_sections = TextToSpeech.SplitTextToShortTexts(text_with_paragraphs, max_section_size)
     assert len(text_seperated_into_sections) == num_paragraphs
     for section in text_seperated_into_sections:
         assert len(section) < max_section_size
@@ -59,7 +59,7 @@ def test_SplitTextToSections():
     # Test input: Several paragraphs then one triple sized paragraph of short sentences
     num_sentences = 90
     text_with_long_paragraph = ''.join([ 'cats ' * 50 + os.linesep * 2 for i in range(num_paragraphs)]) + ''.join([ 'Cats and dogs. ' * num_sentences ])
-    text_seperated_into_sections = TextToSpeech.SplitTextToSections(text_with_long_paragraph, max_section_size)
+    text_seperated_into_sections = TextToSpeech.SplitTextToShortTexts(text_with_long_paragraph, max_section_size)
     assert len(text_seperated_into_sections) == num_paragraphs + num_sentences
     for section in text_seperated_into_sections:
         assert len(section) < max_section_size
@@ -67,7 +67,7 @@ def test_SplitTextToSections():
     # Test split long text with no sentences by word
     # Test Input: Several paragraphs then one long paragraph with no sentences
     text_with_long_paragraph_no_sentences = ''.join( [ 'cats ' * 50 + os.linesep * 2 for i in range(num_paragraphs) ] ) + ''.join( [ 'cats ' * 90 ] )
-    text_seperated_into_sections = TextToSpeech.SplitTextToSections(text_with_long_paragraph_no_sentences, max_section_size)
+    text_seperated_into_sections = TextToSpeech.SplitTextToShortTexts(text_with_long_paragraph_no_sentences, max_section_size)
     # Check none of the sections is too big
     for section in text_seperated_into_sections:
         assert len(section) < max_section_size
@@ -75,7 +75,7 @@ def test_SplitTextToSections():
     # Test: split long text with no words, truncate the big words
     # Test Input: Several paragraphs then one long paragraph with no sentences
     text_with_long_paragraph_just_one_word = ''.join( [ 'cats ' * 50 + os.linesep * 2 for i in range(num_paragraphs) ] ) + ''.join( [ 'cats' * 90 ] )
-    text_seperated_into_sections = TextToSpeech.SplitTextToSections(text_with_long_paragraph_just_one_word, 500)
+    text_seperated_into_sections = TextToSpeech.SplitTextToShortTexts(text_with_long_paragraph_just_one_word, 500)
     for section in text_seperated_into_sections:
         assert len(section) < max_section_size
 
