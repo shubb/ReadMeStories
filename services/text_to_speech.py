@@ -1,5 +1,6 @@
 import os
 import uuid
+import asyncio
 import tempfile
 from google.cloud import texttospeech
 from pydub.generators import Sine
@@ -9,6 +10,7 @@ from google.oauth2 import service_account
 
 GOOGLE_MAX_TEXT_LENGTH=5000
 GOOGLE_CREDENTIALS_PATH=os.path.join(ROOT_DIR, 'secrets/readnovel-a7ed7aaa0145.json')
+MAX_CONCURRENT_GOOGLE_API_REQUESTS = 5
 # TODO: Should this path be in config file?
 
 # Load google credentials
@@ -43,19 +45,32 @@ def SpeakLongText(long_text, max_text_length=GOOGLE_MAX_TEXT_LENGTH):
     "Converts a full length long_text text into an mp3"
 
     # Split the long_text into short_texts small enough to TTS
-    long_text_short_texts = SplitTextToShortTexts(long_text, max_text_length)
+    long_text_as_short_texts = SplitTextToShortTexts(long_text, max_text_length)
 
+    
     # Allocate a temporary directory
-    with tempfile.TemporaryDirectory() as segment_temp_dir:
+    with tempfile.TemporaryDirectory() as temp_dir:
+        
+        # Get the event loop
+        loop = asyncio.get_event_loop()
+        concurrency_limit = asyncio.Semaphore(MAX_CONCURRENT_GOOGLE_API_REQUESTS)
 
+        # Call to spawn a thread to generate each short text
+        async def GenerateShortTextInThread(loop, short_text, temp_dir):
+            async with concurrency_limit:
+                return await loop.run_in_executor(None, SpeakShortText, short_text, temp_dir)
+
+        # Call to generate MP3s for all the short texts (concurrently)
+        async def SimultaneouslyGenerateSeveralShortTexts(loop, all_short_texts, temp_dir):
+            mp3_generation_tasks = [ GenerateShortTextInThread(loop, short_text, temp_dir) for short_text in all_short_texts ]
+            return await asyncio.gather(*mp3_generation_tasks)
+        
         # Generate an MP3 for each short_text
-        mp3_short_texts = []
-        for short_text in long_text_short_texts:
-            mp3_short_texts.append(SpeakShortText(short_text, segment_temp_dir))
+        mp3s_of_short_texts = loop.run_until_complete(SimultaneouslyGenerateSeveralShortTexts(loop, long_text_as_short_texts, temp_dir))
 
         # Combine the short_texts into a single mp3
         mp3_long_text = Sine(300).to_audio_segment(duration=500)
-        for mp3_short_text in mp3_short_texts:
+        for mp3_short_text in mp3s_of_short_texts:
             mp3_long_text = mp3_long_text.append(AudioSegment.from_mp3(mp3_short_text))
 
         # Return the full Mp3 (as a temporary file)
@@ -70,6 +85,9 @@ def SpeakShortText(short_text, segment_dir):
     "Converts a short short_text text into an mp3"
     if len(short_text) > GOOGLE_MAX_TEXT_LENGTH:
         raise Exception("Text too big, text must be broken into units of ${GOOGLE_MAX_TEXT_LENGTH}")
+
+    # Note: It would be nice to extract client initialisation from the inner loops
+    #       but I don't know how that would play with async. Risk of races. 
 
     # Instantiates a client
     client = texttospeech.TextToSpeechClient(credentials=credentials)

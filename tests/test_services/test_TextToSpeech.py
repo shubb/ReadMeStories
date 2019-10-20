@@ -8,24 +8,26 @@ def test_SpeakShortText():
 
     # Create an MP3 speech saying section_text
     section_text = "Some text to say"  
+    
 
+    # Get event loop
     with tempfile.TemporaryDirectory() as segment_temp_dir:
-
-        # Get event loop
         loop = asyncio.get_event_loop()
 
         # Run TTS in a thread executor
-        async def runner(loop, section_text, segment_temp_dir):
-            return await loop.run_in_executor(None, TextToSpeech.SpeakShortText, section_text, segment_temp_dir)
+        async def runner(section_text, segment_temp_dir):
+            async with concurrency_limit:
+                return await loop.run_in_executor(None, TextToSpeech.SpeakShortText, section_text, segment_temp_dir)
 
-        tempfile_mp3_output = loop.run_until_complete(runner(loop, section_text, segment_temp_dir))
+        async def run_several(section_text, segment_temp_dir):
+            tasks = [runner(section_text, segment_temp_dir) for x in range(100)]
+            return await asyncio.gather(*tasks)
+
+        tempfile_mp3_output = loop.run_until_complete(run_several(section_text, segment_temp_dir))
 
         # Sniff test the MP3 by checking it is about the right size
         assert os.stat(tempfile_mp3_output).st_size > 3000
         assert os.stat(tempfile_mp3_output).st_size < 10000
-        
-        # Close the event loop
-        loop.close()
 
 
 def test_SpeakChapter():
