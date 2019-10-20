@@ -1,5 +1,6 @@
 import os
 import tempfile
+import asyncio
 
 import services.text_to_speech as TextToSpeech
 
@@ -10,11 +11,21 @@ def test_SpeakShortText():
 
     with tempfile.TemporaryDirectory() as segment_temp_dir:
 
-        tempfile_mp3_output = TextToSpeech.SpeakShortText(section_text, segment_temp_dir)
+        # Get event loop
+        loop = asyncio.get_event_loop()
+
+        # Run TTS in a thread executor
+        async def runner(loop, section_text, segment_temp_dir):
+            return await loop.run_in_executor(None, TextToSpeech.SpeakShortText, section_text, segment_temp_dir)
+
+        tempfile_mp3_output = loop.run_until_complete(runner(loop, section_text, segment_temp_dir))
 
         # Sniff test the MP3 by checking it is about the right size
         assert os.stat(tempfile_mp3_output).st_size > 3000
         assert os.stat(tempfile_mp3_output).st_size < 10000
+        
+        # Close the event loop
+        loop.close()
 
 
 def test_SpeakChapter():
