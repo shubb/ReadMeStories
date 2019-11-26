@@ -7,10 +7,11 @@ from pydub.generators import Sine
 from pydub import AudioSegment
 from project_root import ROOT_DIR
 from google.oauth2 import service_account
+import concurrent.futures
 
 GOOGLE_MAX_TEXT_LENGTH=5000
 GOOGLE_CREDENTIALS_PATH=os.path.join(ROOT_DIR, 'secrets/readnovel-a7ed7aaa0145.json')
-MAX_CONCURRENT_GOOGLE_API_REQUESTS = 5
+MAX_CONCURRENT_GOOGLE_API_REQUESTS = 10
 # TODO: Should this path be in config file?
 
 # Load google credentials
@@ -38,6 +39,8 @@ def SpeakChapter(chapter_dict):
         .export(mp3_tempfile_to_return.name, format="mp3")
     )
 
+    mp3_tempfile_to_return.close()
+
     # Return the tempfile which is now an MP3 of our chapter
     return mp3_tempfile_to_return
 
@@ -55,18 +58,29 @@ def SpeakLongText(long_text, max_text_length=GOOGLE_MAX_TEXT_LENGTH):
         loop = asyncio.get_event_loop()
         concurrency_limit = asyncio.Semaphore(MAX_CONCURRENT_GOOGLE_API_REQUESTS)
 
-        # Call to spawn a thread to generate each short text
-        async def GenerateShortTextInThread(loop, short_text, temp_dir):
-            async with concurrency_limit:
-                return await loop.run_in_executor(None, SpeakShortText, short_text, temp_dir)
+        # NOTE: Google's text to speech library creates a TCP connection for each request but does not close it. 
+        #       These even stay open in the background after the Client is de-referenced (?!). 
+        #       These each use a File Descriptor, so for a large book, we hit the max file descriptors limit and crash. 
+        #       Running each TTS in its own proccess guarantees that at least at the end of the chapter, all will be de-allocated. 
 
-        # Call to generate MP3s for all the short texts (concurrently)
-        async def SimultaneouslyGenerateSeveralShortTexts(loop, all_short_texts, temp_dir):
-            mp3_generation_tasks = [ GenerateShortTextInThread(loop, short_text, temp_dir) for short_text in all_short_texts ]
-            return await asyncio.gather(*mp3_generation_tasks)
-        
-        # Generate an MP3 for each short_text
-        mp3s_of_short_texts = loop.run_until_complete(SimultaneouslyGenerateSeveralShortTexts(loop, long_text_as_short_texts, temp_dir))
+        # Manually create an executor so we can force it to clean up after
+        with concurrent.futures.ProcessPoolExecutor(max_workers=MAX_CONCURRENT_GOOGLE_API_REQUESTS) as executor:
+
+            # Call to spawn a thread to generate each short text
+            async def GenerateShortTextInThread(loop, short_text, temp_dir):
+                async with concurrency_limit:
+                    return await loop.run_in_executor(executor, SpeakShortText, short_text, temp_dir)
+
+            # Call to generate MP3s for all the short texts (concurrently)
+            async def SimultaneouslyGenerateSeveralShortTexts(loop, all_short_texts, temp_dir):
+                mp3_generation_tasks = [ GenerateShortTextInThread(loop, short_text, temp_dir) for short_text in all_short_texts ]
+                return await asyncio.gather(*mp3_generation_tasks)
+            
+            # Generate an MP3 for each short_text
+            mp3s_of_short_texts = loop.run_until_complete(SimultaneouslyGenerateSeveralShortTexts(loop, long_text_as_short_texts, temp_dir))
+
+            # Attempt to clean up all resources
+            executor.shutdown(wait = True)
 
         # Combine the short_texts into a single mp3
         mp3_long_text = Sine(300).to_audio_segment(duration=500)
@@ -98,24 +112,24 @@ def SpeakShortText(short_text, segment_dir):
     # Build the voice request, select the language code ("en-US") and the ssml
     # voice gender ("neutral")
     voice = texttospeech.types.VoiceSelectionParams(
-        language_code='en-GB',
-        name='en-IN-Wavenet-A') #Use indian english wavenet voice for a unique sound
+        language_code='en-US',
+        name='en-AU-Wavenet-C') #Use indian english wavenet voice for a unique sound
 
     # Select the type of audio file you want returned
     audio_config = texttospeech.types.AudioConfig(
         audio_encoding=texttospeech.enums.AudioEncoding.MP3,
         pitch=0,
         speaking_rate=1.0,
-        effects_profile_id=['headphone-class-device'])
+        #effects_profile_id=['headphone-class-device']
+        )
 
     # Perform the text-to-speech request on the text input with the selected
     # voice parameters and audio file type
     response = client.synthesize_speech(synthesis_input, voice, audio_config)
 
     destination_filename = os.path.join(segment_dir, uuid.uuid4().hex + '.mp3')
-    temporary_mp3 = open(destination_filename, 'wb+')
-    temporary_mp3.write(response.audio_content)
-    temporary_mp3.close()
+    with open(destination_filename, 'wb+') as temporary_mp3:
+        temporary_mp3.write(response.audio_content)
 
     # Needs to be deleted later
     # TODO: What is better way to do this? Does it work without delete=False
