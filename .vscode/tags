@@ -1,0 +1,58 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+CleanUpTextForTTS	../services/text_to_speech.py	/^def CleanUpTextForTTS(full_text):$/;"	kind:function	line:160
+CopyChapter	../runner.py	/^def CopyChapter(chapter, total_chaps):$/;"	kind:function	line:6
+GOOGLE_CREDENTIALS_PATH	../services/text_to_speech.py	/^GOOGLE_CREDENTIALS_PATH=os.path.join(ROOT_DIR, 'secrets\/readnovel-a7ed7aaa0145.json')$/;"	kind:variable	line:12
+GOOGLE_MAX_TEXT_LENGTH	../services/text_to_speech.py	/^GOOGLE_MAX_TEXT_LENGTH=5000$/;"	kind:variable	line:11
+GenerateShortTextInThread	../services/text_to_speech.py	/^        async def GenerateShortTextInThread(loop, short_text, temp_dir):$/;"	kind:function	line:61
+GetChapterTexFromEpubHTMLChapter	../services/novel_sites/uploaded_epub.py	/^def GetChapterTexFromEpubHTMLChapter(chapter_dict):$/;"	kind:function	line:27
+GetChapterTextByURL	../services/novel_sites/royal_road.py	/^def GetChapterTextByURL(chapter_url):$/;"	kind:function	line:86
+GetMockResponse	../tests/mock_web_responses/__init__.py	/^def GetMockResponse(mock_response_filename):$/;"	kind:function	line:6
+GetStoryByID	../services/novel_sites/royal_road.py	/^def GetStoryByID(rrd_story_id):$/;"	kind:function	line:111
+GetStoryByLocalPath	../services/novel_sites/uploaded_epub.py	/^def GetStoryByLocalPath(epub_path):$/;"	kind:function	line:37
+GetTableOfContentsByID	../services/novel_sites/royal_road.py	/^def GetTableOfContentsByID(rrd_story_id):$/;"	kind:function	line:49
+GetTableOfContentsFromEpub	../services/novel_sites/uploaded_epub.py	/^def GetTableOfContentsFromEpub(epub):$/;"	kind:function	line:5
+GetTestEpubPath	../tests/test_assets/__init__.py	/^def GetTestEpubPath():$/;"	kind:function	line:3
+MAX_CONCURRENT_GOOGLE_API_REQUESTS	../services/text_to_speech.py	/^MAX_CONCURRENT_GOOGLE_API_REQUESTS = 10$/;"	kind:variable	line:13
+NovelToAudiobook	../runner.py	/^def NovelToAudiobook():$/;"	kind:function	line:11
+ROOT_DIR	../project_root.py	/^ROOT_DIR = os.path.dirname(os.path.abspath(__file__))/;"	kind:variable	line:2
+RRD_BASE_URL	../services/novel_sites/royal_road.py	/^RRD_BASE_URL = "https:\/\/www.royalroad.com\/"$/;"	kind:variable	line:7
+RRD_TOC_URL	../services/novel_sites/royal_road.py	/^RRD_TOC_URL = "fiction\/{}"$/;"	kind:variable	line:11
+SearchByName	../services/novel_sites/royal_road.py	/^def SearchByName(name_to_search):$/;"	kind:function	line:13
+SimultaneouslyGenerateSeveralShortTexts	../services/text_to_speech.py	/^        async def SimultaneouslyGenerateSeveralShortTexts(loop, all_short_texts, temp_dir):$/;"	kind:function	line:66
+SpeakChapter	../services/text_to_speech.py	/^def SpeakChapter(chapter_dict):$/;"	kind:function	line:19
+SpeakLongText	../services/text_to_speech.py	/^def SpeakLongText(long_text, max_text_length=GOOGLE_MAX_TEXT_LENGTH):$/;"	kind:function	line:46
+SpeakShortText	../services/text_to_speech.py	/^def SpeakShortText(short_text, segment_dir):$/;"	kind:function	line:86
+SplitTextToShortTexts	../services/text_to_speech.py	/^def SplitTextToShortTexts(full_text, max_text_length):$/;"	kind:function	line:130
+__init__.py	../tests/mock_web_responses/__init__.py	1;"	kind:file	line:1
+__init__.py	../tests/test_assets/__init__.py	1;"	kind:file	line:1
+_is_blank	../services/text_to_speech.py	/^def _is_blank(text):$/;"	kind:function	line:127
+credentials	../services/text_to_speech.py	/^credentials = service_account.Credentials.from_service_account_file(GOOGLE_CREDENTIALS_PATH)$/;"	kind:variable	line:17
+dir_path	../tests/mock_web_responses/__init__.py	/^dir_path = os.path.dirname(os.path.realpath(__file__))$/;"	kind:variable	line:3
+project_root.py	../project_root.py	1;"	kind:file	line:1
+response_dir	../tests/mock_web_responses/__init__.py	/^response_dir = os.path.join(dir_path, 'responses')$/;"	kind:variable	line:4
+royal_road.py	../services/novel_sites/royal_road.py	1;"	kind:file	line:1
+run_several	../tests/test_services/test_TextToSpeech.py	/^        async def run_several(section_text, segment_temp_dir):$/;"	kind:function	line:23
+runner	../tests/test_services/test_TextToSpeech.py	/^        async def runner(section_text, segment_temp_dir):$/;"	kind:function	line:19
+runner.py	../runner.py	1;"	kind:file	line:1
+test_CleanUpTextForTTS	../tests/test_services/test_TextToSpeech.py	/^def test_CleanUpTextForTTS():$/;"	kind:function	line:97
+test_GetChapterTexFromEpubHTMLChapter	../tests/test_services/test_novel_sites/test_UploadEpub.py	/^def test_GetChapterTexFromEpubHTMLChapter():$/;"	kind:function	line:14
+test_GetChapterTextByURL	../tests/test_services/test_novel_sites/test_RoyalRoad.py	/^def test_GetChapterTextByURL():$/;"	kind:function	line:34
+test_GetStoryByID	../tests/test_services/test_novel_sites/test_RoyalRoad.py	/^def test_GetStoryByID():$/;"	kind:function	line:45
+test_GetStoryByLocalPath	../tests/test_services/test_novel_sites/test_UploadEpub.py	/^def test_GetStoryByLocalPath():$/;"	kind:function	line:24
+test_GetTableOfContentsByID	../tests/test_services/test_novel_sites/test_RoyalRoad.py	/^def test_GetTableOfContentsByID():$/;"	kind:function	line:21
+test_GetTableOfContentsFromEpub	../tests/test_services/test_novel_sites/test_UploadEpub.py	/^def test_GetTableOfContentsFromEpub():$/;"	kind:function	line:7
+test_RoyalRoad.py	../tests/test_services/test_novel_sites/test_RoyalRoad.py	1;"	kind:file	line:1
+test_SearchByName	../tests/test_services/test_novel_sites/test_RoyalRoad.py	/^def test_SearchByName():$/;"	kind:function	line:7
+test_SpeakChapter	../tests/test_services/test_TextToSpeech.py	/^def test_SpeakChapter():$/;"	kind:function	line:34
+test_SpeakLongText	../tests/test_services/test_TextToSpeech.py	/^def test_SpeakLongText():$/;"	kind:function	line:48
+test_SpeakShortText	../tests/test_services/test_TextToSpeech.py	/^def test_SpeakShortText():$/;"	kind:function	line:7
+test_SplitTextToShortTexts	../tests/test_services/test_TextToSpeech.py	/^def test_SplitTextToShortTexts():$/;"	kind:function	line:60
+test_TextToSpeech.py	../tests/test_services/test_TextToSpeech.py	1;"	kind:file	line:1
+test_UploadEpub.py	../tests/test_services/test_novel_sites/test_UploadEpub.py	1;"	kind:file	line:1
+text_to_speech.py	../services/text_to_speech.py	1;"	kind:file	line:1
+uploaded_epub.py	../services/novel_sites/uploaded_epub.py	1;"	kind:file	line:1
